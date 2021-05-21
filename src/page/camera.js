@@ -4,14 +4,16 @@ import * as ImagePicker from "expo-image-picker";
 import { Camera } from "expo-camera";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { LaporanAction } from "../redux/Action";
+import { connect } from "react-redux";
 
-export default class camera extends Component {
+export class camera extends Component {
   constructor(props) {
     super(props);
     this.state = {
       hasPermission: null,
       type: Camera.Constants.Type.back,
-      photo: "",
+      //   photo: "",
     };
   }
 
@@ -28,17 +30,18 @@ export default class camera extends Component {
   };
 
   takePicture = () => {
-    console.log("pencet");
     if (this.camera) {
       this.camera.takePictureAsync({ onPictureSaved: this.onPictureSaved });
     }
   };
 
-  onPictureSaved = (photo) => {
+  onPictureSaved = (value) => {
+    // console.log(JSON.stringify(value));
+    const photo = value.uri;
     // console.log(photo);
-    this.setState({ photo: photo.uri });
+    this.props.LaporanAction("gambar", photo);
 
-    this.props.navigation.replace("Laporan", this.state.photo);
+    this.props.navigation.navigate("Laporan", this.state);
   };
 
   getPermissionAsync = async () => {
@@ -55,12 +58,13 @@ export default class camera extends Component {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
     // console.log(result.uri);
-    this.setState({ photo: result.uri });
-    this.props.navigation.replace("Laporan", this.state.photo);
+
+    this.props.LaporanAction("gambar", result.uri);
+    this.props.navigation.replace("Laporan", this.state);
   };
 
   render() {
-    console.log(this.state.photo);
+    // console.log(this.state.photo);
     const { hasPermission } = this.state;
     if (hasPermission === null) {
       return <View />;
@@ -117,3 +121,15 @@ export default class camera extends Component {
     }
   }
 }
+
+const mapStateToProps = (state) => {
+  return {
+    dataLaporan: state.LaporanReducer,
+  };
+};
+
+const mapDispatchToProps = {
+  LaporanAction,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(camera);
